@@ -1,5 +1,6 @@
 package com.timgroup.iterata
 
+import scala.annotation.tailrec
 import scala.collection.{GenTraversableOnce, AbstractIterator, Iterator}
 
 /**
@@ -40,7 +41,8 @@ class ParIterator[A](val groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A
 
   override def hasNext: Boolean = currChunk.nonEmpty || groupedIt.hasNext
 
-  override def next(): A = currChunk match {
+  @tailrec
+  final override def next(): A = currChunk match {
     case a :: as => currChunk = as; a
     case Nil     => currChunk = groupedIt.next().toList; next()
   }
