@@ -61,3 +61,5 @@ pomExtra :=
       <url>https://github.com/ms-tg</url>
     </developer>
   </developers>
+
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
