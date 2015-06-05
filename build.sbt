@@ -11,7 +11,26 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.5" % "test"
 
 scalaVersion := "2.11.6"
 
-// moves this stuff to ./project/publish.sbt
+////
+// TODO: Move this stuff to ./project/publish.sbt
+//
+// To release a new version of this project, type
+//
+//      sbt release
+//
+// Then, you must release the deployment from oss.sonatype.org to Maven Central,
+// see http://central.sonatype.org/pages/releasing-the-deployment.html
+//
+// In order to publish, you will need to have your sbt-pgp key configured and
+// published, and your TIM Group sonatype credentials file present, please see
+// below for details.
+////
+
+//
+// Below are the standard configuration steps to publish to Maven Central via
+// oss.sonatype.org using sbt. For more information, please see
+//   http://www.scala-sbt.org/0.13/docs/Using-Sonatype.html
+//
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
@@ -21,13 +40,39 @@ publishTo := {
     Some("releases"  at nexus + "service/local/staging/deploy/maven2")
 }
 
-// Create this file to publish to Sonatype as TIM Group. File Contents:
-//   realm=Sonatype Nexus Repository Manager
-//   host=oss.sonatype.org
-//   user=<USERNAME>
-//   password=<PASSWORD>
+// In order publish to oss.sonatype.org as TIM Group, you must create
+// the file `~/.timgroup_sonatype_credentials` with the following lines:
+//
+//     realm=Sonatype Nexus Repository Manager
+//     host=oss.sonatype.org
+//     user=<USERNAME>
+//     password=<PASSWORD>
 //
 credentials += Credentials(Path.userHome / ".timgroup_sonatype_credentials")
 
-// Make sure that you have sbt-pgp configured, and that you have generated a signing key
-//   http://www.scala-sbt.org/sbt-pgp/
+publishMavenStyle := true
+
+publishArtifact in Test := false
+
+pomIncludeRepository := { _ => false }
+
+pomExtra :=
+  <url>https://github.com/tim-group/iterata</url>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>http://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>git@github.com:tim-group/iterata.git</url>
+    <connection>scm:git:git@github.com:tim-group/iterata.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>ms-tg</id>
+      <name>Marc Siegel</name>
+      <url>https://github.com/ms-tg</url>
+    </developer>
+  </developers>
