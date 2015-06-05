@@ -43,21 +43,21 @@ pomIncludeRepository := { _ => false }
 
 pomExtra :=
   <url>https://github.com/tim-group/iterata</url>
-    <licenses>
-      <license>
-        <name>MIT</name>
-        <url>http://opensource.org/licenses/MIT</url>
-        <distribution>repo</distribution>
-      </license>
-    </licenses>
-    <scm>
-      <url>git@github.com:tim-group/iterata.git</url>
-      <connection>scm:git:git@github.com:tim-group/iterata.git</connection>
-    </scm>
-    <developers>
-      <developer>
-        <id>ms-tg</id>
-        <name>Marc Siegel</name>
-        <url>https://github.com/ms-tg</url>
-      </developer>
-    </developers>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>http://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>git@github.com:tim-group/iterata.git</url>
+    <connection>scm:git:git@github.com:tim-group/iterata.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>ms-tg</id>
+      <name>Marc Siegel</name>
+      <url>https://github.com/ms-tg</url>
+    </developer>
+  </developers>
