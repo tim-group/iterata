@@ -41,7 +41,7 @@ publishArtifact in Test := false
 
 pomIncludeRepository := { _ => false }
 
-pomExtra :=
+pomExtra := (
   <url>https://github.com/tim-group/iterata</url>
   <licenses>
     <license>
@@ -61,5 +61,6 @@ pomExtra :=
       <url>https://github.com/ms-tg</url>
     </developer>
   </developers>
+)
 
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
