@@ -12,6 +12,14 @@
 ////
 
 //
+// Force sbt-pgp to ignore the system gpg and use default jvm implementation
+// and file locations, see http://www.scala-sbt.org/sbt-pgp/usage.html
+//
+useGpg := false
+pgpSecretRing := Path.userHome / ".sbt" / "gpg" / "secring.asc"
+pgpPublicRing := Path.userHome / ".sbt" / "gpg" / "pubring.asc"
+
+//
 // Below are the standard configuration steps to publish to Maven Central via
 // oss.sonatype.org using sbt. For more information, please see
 //   http://www.scala-sbt.org/0.13/docs/Using-Sonatype.html
