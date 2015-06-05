@@ -50,7 +50,6 @@ publishArtifact in Test := false
 pomIncludeRepository := { _ => false }
 
 pomExtra := (
-  <url>https://github.com/tim-group/iterata</url>
   <licenses>
     <license>
       <name>MIT</name>
