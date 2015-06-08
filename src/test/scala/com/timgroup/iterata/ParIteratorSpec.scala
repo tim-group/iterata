@@ -102,7 +102,7 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       }
 
       it("extends parallel execution to function in a second #flatMap") {
-        val it1 = (1 to 100).toIterator.par(10)
+        val it1 = (1 to 10000).toIterator.par(1000)
         val it2 = it1.flatMap(n => Seq((n, Thread.currentThread.getId)))
         val it3 = it2.flatMap { case (n, id) => Seq((n, id, Thread.currentThread.getId)) }
         //println(it3.toList)
@@ -146,7 +146,7 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       }
 
       it("extends parallel execution to function in a second #map") {
-        val it1 = (1 to 100).toIterator.par(10)
+        val it1 = (1 to 10000).toIterator.par(1000)
         val it2 = it1.map(n => (n, Thread.currentThread.getId))
         val it3 = it2.map { case (n, id) => (n, id, Thread.currentThread.getId) }
         //println(it3.toList)
