@@ -4,15 +4,26 @@ import scala.annotation.tailrec
 import scala.collection.{GenTraversableOnce, AbstractIterator, Iterator}
 
 /**
- * This "parallel iterator" combines Scala’s parallel collections with an
+ * A "parallel iterator" combining Scala’s parallel collections with an
  * underlying grouped iterator, processing the contents of each chunk in
- * parallel.
+ * parallel, and exposing the interface of a simple ungrouped iterator.
  *
  * See: http://docs.scala-lang.org/overviews/parallel-collections/overview.html
  *
  * The goal is to read a chunk from the underlying grouped iterator,
  * and then to process each element inside the chunk in parallel via `#map`
- * and `#flatMap`, using the standard Scala parallel collections.
+ * and `#flatMap`, using the standard Scala parallel collections to speed up
+ * the processing the passed function over the iterator.
+ *
+ * ParIterator is typically constructed via the method `Iterator#par()` which
+ * is added via the implicits in `ParIterator.Implicits`, for example:
+ *
+ * ```tut
+ * import com.timgroup.iterata.ParIterator.Implicits._
+ *
+ * val it = (1 to 100000).toIterator.par()
+ * it.map(_ + 1).sum
+ * ```
  *
  * @param groupedIt  an underlying grouped iterator, e.g. from `Iterator#grouped`
  * @tparam A         the type of each element
