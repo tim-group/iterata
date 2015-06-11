@@ -18,12 +18,12 @@ import scala.collection.{GenTraversableOnce, AbstractIterator, Iterator}
  * ParIterator is typically constructed via the method `Iterator#par()` which
  * is added via the implicits in `ParIterator.Implicits`, for example:
  *
- * ```tut
- * import com.timgroup.iterata.ParIterator.Implicits._
- *
- * val it = (1 to 100000).toIterator.par()
- * it.map(_ + 1).sum
- * ```
+ * {{{
+ * scala> import com.timgroup.iterata.ParIterator.Implicits._
+ * scala> val it = (1 to 100000).toIterator.par().map(n => (n + 1, Thread.currentThread.getId))
+ * scala> it.map(_._1).toSet.size
+ * res2: Int = 8 // addition was distributed over 8 threads
+ * }}}
  *
  * @param groupedIt  an underlying grouped iterator, e.g. from `Iterator#grouped`
  * @tparam A         the type of each element
