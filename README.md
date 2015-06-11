@@ -4,6 +4,18 @@
 # iterata
 Useful extensions to Scala's Iterator. Think _errata for iterators_.
 
+## Installation
+
+Using SBT:
+
+```sbt
+libraryDependencies += "com.timgroup" %% "iterata" % "0.1.3"
+```
+
+Or download the jar [directly from maven central](https://repo1.maven.org/maven2/com/timgroup/iterata_2.11/).
+
+Iterata is currently published for Scala 2.11 only, please feel free to let us know if you'd like a build for a different Scala version.
+
 ## Usage
 
 ### #par()
