@@ -28,7 +28,8 @@ import scala.collection.{GenTraversableOnce, AbstractIterator, Iterator}
  * @param groupedIt  an underlying grouped iterator, e.g. from `Iterator#grouped`
  * @tparam A         the type of each element
  */
-class ParIterator[A](val groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A] {
+class ParIterator[A](groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A] {
+  val groupedItNoEmptyChunks = groupedIt.filterNot(_.isEmpty)
   var currChunk: List[A] = Nil
 
   //////////////////////////////////////////////////////////////////////////
@@ -45,20 +46,20 @@ class ParIterator[A](val groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A
     new ParIterator(allChunks.map(xs => xs.par.filter(p).toList))
 
   private def allChunks = currChunk match {
-    case Nil => groupedIt
-    case _   => Seq(currChunk).toIterator ++ groupedIt
+    case Nil => groupedItNoEmptyChunks
+    case _   => Seq(currChunk).toIterator ++ groupedItNoEmptyChunks
   }
 
   //////////////////////////////////////////////////////////////////////////
   // Implementation of basic iterator interface, no parallelism here
   //////////////////////////////////////////////////////////////////////////
 
-  override def hasNext: Boolean = currChunk.nonEmpty || groupedIt.hasNext
+  override def hasNext: Boolean = currChunk.nonEmpty || groupedItNoEmptyChunks.hasNext
 
   @tailrec
   final override def next(): A = currChunk match {
     case a :: as => currChunk = as; a
-    case Nil     => currChunk = groupedIt.next().toList; next()
+    case Nil     => currChunk = groupedItNoEmptyChunks.next().toList; next()
   }
 }
 

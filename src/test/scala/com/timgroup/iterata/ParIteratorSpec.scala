@@ -115,6 +115,12 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
         it.next()
         it.flatMap(n => Seq(n)).toList shouldBe Nil
       }
+
+      it("handles when function applied leaves no elements in current chunk") {
+        val it = Seq(1, 2).toIterator.par(2)
+        it.next() // current chunk should still contain 2
+        it.flatMap(n => Nil).toList shouldBe Nil
+      }
     }
 
     describe("#map") {
@@ -205,6 +211,12 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
         val it = Seq(1).toIterator.par(1)
         it.next()
         it.filter(n => true).toList shouldBe Nil
+      }
+
+      it("handles when filter predicate leaves no elements in current chunk") {
+        val it = Seq(1, 2).toIterator.par(2)
+        it.next() // current chunk should still contain 2
+        it.filter(_ => false).toList shouldBe Nil
       }
     }
 
