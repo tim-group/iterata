@@ -161,6 +161,53 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       }
     }
 
+    describe("#filter") {
+      it("filters by applying predicate to each element across chunks") {
+        val it = (1 to 10).toList.toIterator.par(3)
+        val xs = it.filter(n => n % 3 != 0)
+        xs.toList shouldBe List(1, 2, 4, 5, 7, 8, 10)
+      }
+
+      it("when iterator partially advanced into chunk") {
+        val it = (1 to 10).toList.toIterator.par(3)
+        for (_ <- 1 to 5) it.next()
+        val xs = it.filter(n => n % 3 != 0)
+        xs.toList shouldBe List(7, 8, 10)
+      }
+
+      it("passes on exception thrown by underlying iterator #next") {
+        val ex = new RuntimeException("uh oh")
+        val it = List(1).toIterator.map { n => throw ex; n }.par(3)
+        intercept[RuntimeException] { it.filter(n => n % 3 != 0).toList } shouldBe ex
+      }
+
+      it("preserves laziness in subsequent chunks when partially advanced into first chunk") {
+        var effectOccurred = false
+        val it = (1 to 10).toIterator.map { n => effectOccurred ||= (n == 4); n }.par(3)
+        it.next()
+        val xs = it.filter(n => n % 3 != 0)
+        effectOccurred shouldBe false
+      }
+
+      it("extends parallel execution to function in a second #filter") {
+        var threadIds1 = Set[Long]()
+        var threadIds2 = Set[Long]()
+
+        val it1 = (1 to 10000).toIterator.par(1000)
+        val it2 = it1.filter { n => synchronized { threadIds1 += Thread.currentThread.getId }; true }
+        val it3 = it2.filter { n => synchronized { threadIds2 += Thread.currentThread.getId }; true }
+        it3.foreach(_ => ())
+        threadIds1.size shouldBe > (1)
+        threadIds2.size shouldBe > (1)
+      }
+
+      it("handles when underlying iterator is already exhausted") {
+        val it = Seq(1).toIterator.par(1)
+        it.next()
+        it.filter(n => true).toList shouldBe Nil
+      }
+    }
+
     describe("#hasNext") {
       it("returns false when underlying iterator was already empty") {
         List[Int]().toIterator.par(3).hasNext shouldBe false
