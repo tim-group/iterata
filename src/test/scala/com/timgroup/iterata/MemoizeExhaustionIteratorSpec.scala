@@ -37,6 +37,47 @@ class MemoizeExhaustionIteratorSpec extends FunSpec with Matchers with Diagramme
 
   }
 
+  describe("#memoizeExhaustion") {
+
+    class MemoizeExhaustionIterator[A](it: Iterator[A]) extends Iterator[A] {
+      var shouldForwardHasNext = true
+
+      override def hasNext: Boolean = {
+        if (shouldForwardHasNext) { shouldForwardHasNext = it.hasNext }
+        shouldForwardHasNext
+      }
+
+      override def next(): A = it.next()
+    }
+
+    implicit class IteratorWithMemoizeExhaustion[A](it: Iterator[A]) {
+      def memoizeExhaustion: Iterator[A] =
+        new MemoizeExhaustionIterator[A](it)
+    }
+
+    it("never calls underlying hasNext after first false") {
+      val itA = new IteratorWithExpensiveHasNext()
+      val itB = itA.memoizeExhaustion
+
+      itB.foreach(_ => ())
+      for (_ <- 1 to 20) { itB.hasNext }
+
+      itA.numTimesHasNextReturnedFalse should be(1)
+    }
+
+    it("can be used to workaround the JoinIterator issue (SI-9623)") {
+      val it1 = new IteratorWithExpensiveHasNext()
+      val it2 = new IteratorWithExpensiveHasNext()
+
+      (it1.memoizeExhaustion ++ it2).foreach(_ => ())
+
+      // Why it1.hasNext is called the expected 1 time:
+      //   - we memoize the first false value in the underlying iterator hasNext
+      //   - subsequent calls to hasNext from JoinIterator get the memoized value
+      it1.numTimesHasNextReturnedFalse should be(1)
+    }
+  }
+
   class IteratorWithExpensiveHasNext(values: Seq[Int] = (1 to 10).toList) extends Iterator[Int] {
     val it = values.iterator
     var numTimesHasNextReturnedFalse = 0
