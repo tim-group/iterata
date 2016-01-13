@@ -1,5 +1,6 @@
 package com.timgroup.iterata
 
+import com.timgroup.iterata.MemoizeExhaustionIterator.Implicits._
 import org.scalatest.{DiagrammedAssertions, FunSpec, Matchers}
 
 class MemoizeExhaustionIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
@@ -38,22 +39,6 @@ class MemoizeExhaustionIteratorSpec extends FunSpec with Matchers with Diagramme
   }
 
   describe("#memoizeExhaustion") {
-
-    class MemoizeExhaustionIterator[A](it: Iterator[A]) extends Iterator[A] {
-      var shouldForwardHasNext = true
-
-      override def hasNext: Boolean = {
-        if (shouldForwardHasNext) { shouldForwardHasNext = it.hasNext }
-        shouldForwardHasNext
-      }
-
-      override def next(): A = it.next()
-    }
-
-    implicit class IteratorWithMemoizeExhaustion[A](it: Iterator[A]) {
-      def memoizeExhaustion: Iterator[A] =
-        new MemoizeExhaustionIterator[A](it)
-    }
 
     it("never calls underlying hasNext after first false") {
       val itA = new IteratorWithExpensiveHasNext()
