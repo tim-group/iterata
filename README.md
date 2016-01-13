@@ -18,7 +18,7 @@ Iterata is currently published for Scala 2.11 only, please feel free to let us k
 
 ## Usage
 
-### #par()
+### 1. Parallel processing iterator: `#par()`
 
 Use the `#par()` method to add parallelism when processing an `Iterator` with functions chained via `#map` and `#flatMap`. It will eagerly evaluate the underlying iterator in chunks, and then evaluate the functions on each chunk via the Scala Parallel Collections. For example:
 
@@ -37,4 +37,23 @@ The `#par()` method is available on any iterator, and takes an optional chunk si
 
 ```scala
 scala> val it = (1 to 100000).toIterator.grouped(4).par
+```
+
+### 2. Memoize exhaustion iterator: `#memoizeExhaustion`
+
+Use the `#memoizeExhaustion` method to wrap an `Iterator` so that its `#hasNext` method will
+not be called again after returning `false`. This is useful in cases where it is expensive
+to check if there is a next element, such as when I/O is involved.
+
+Can serve as a workaround for [SI-9623](https://issues.scala-lang.org/browse/SI-9623), where
+after concatenating two iterators with `++`, the left iterator's `#hasNext` will be called twice
+for every call to the right iterator's `#next()`.
+
+```scala
+scala> import com.timgroup.iterata.MemoizeExhaustionIterator.Implicits._
+scala> val it1 = new IteratorWithExpensiveHasNext()
+scala> val it2 = new IteratorWithExpensiveHasNext()
+scala> (it1.memoizeExhaustion ++ it2).foreach(_ => ())
+scala> it1.numTimesHasNextReturnedFalse
+res2: Int = 1
 ```

@@ -6,7 +6,16 @@ package com.timgroup.iterata
   * further expensive calls. It is also a suitable workaround for SI-9623.
   *
   * See: https://issues.scala-lang.org/browse/SI-9623
-  **
+  *
+  * {{{
+  *   scala> import com.timgroup.iterata.MemoizeExhaustionIterator.Implicits._
+  *   scala> val it1 = new IteratorWithExpensiveHasNext()
+  *   scala> val it2 = new IteratorWithExpensiveHasNext()
+  *   scala> (it1.memoizeExhaustion ++ it2).foreach(_ => ())
+  *   scala> it1.numTimesHasNextReturnedFalse
+  *   res2: Int = 1
+  * }}}
+  *
   * @param it    an underlying iterator for which to memoize the first false result from hasNext
   * @tparam A    the type of each element
   */
