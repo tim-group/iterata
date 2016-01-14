@@ -9,7 +9,7 @@ Useful extensions to Scala's Iterator. Think _errata for iterators_.
 Using SBT:
 
 ```sbt
-libraryDependencies += "com.timgroup" %% "iterata" % "0.1.5"
+libraryDependencies += "com.timgroup" %% "iterata" % "0.1.6"
 ```
 
 Or download the jar [directly from maven central](https://repo1.maven.org/maven2/com/timgroup/iterata_2.11/).
