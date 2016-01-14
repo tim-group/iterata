@@ -3,6 +3,8 @@ package com.timgroup.iterata
 import scala.annotation.tailrec
 import scala.collection.{GenTraversableOnce, AbstractIterator, Iterator}
 
+import MemoizeExhaustionIterator.Implicits.IteratorWithMemoizeExhaustion
+
 /**
  * A "parallel iterator" combining Scala’s parallel collections with an
  * underlying grouped iterator, processing the contents of each chunk in
@@ -50,7 +52,7 @@ class ParIterator[A](groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A] {
 
   private def allChunks = currChunk match {
     case Nil => groupedItNoEmptyChunks
-    case _   => Seq(currChunk).iterator ++ groupedItNoEmptyChunks
+    case _   => Seq(currChunk).iterator.memoizeExhaustion ++ groupedItNoEmptyChunks
   }
 
   //////////////////////////////////////////////////////////////////////////
