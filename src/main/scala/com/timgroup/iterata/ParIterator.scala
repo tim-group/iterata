@@ -45,6 +45,9 @@ class ParIterator[A](groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A] {
   override def filter(p: A => Boolean): Iterator[A] =
     new ParIterator(allChunks.map(xs => xs.par.filter(p).toList))
 
+  override def find(p: A => Boolean): Option[A] =
+    new ParIterator(allChunks.map(xs => xs.par.find(p).toList)).take(1).toList.headOption
+
   private def allChunks = currChunk match {
     case Nil => groupedItNoEmptyChunks
     case _   => Seq(currChunk).toIterator ++ groupedItNoEmptyChunks

@@ -31,11 +31,12 @@ res2: Int = 8 // addition was distributed over 8 threads
 
 You can provide a specific chunk size, for example `it.par(100)`.
 
-Note that only the following methods are implemented (so far) with parallel collections:
+Note that only the following Iterator methods are implemented (so far) to make use of parallel collections:
 
   * `#map`
   * `#flatMap`
   * `#filter`
+  * `#find`
 
 #### Grouped vs Ungrouped
 

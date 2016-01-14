@@ -63,6 +63,24 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       millisWithParIt2 shouldBe (millisWithParIt1 +- (0.5 * millisWithParIt1))
     }
 
+    it("Faster #find on fast iterator with slow predicate", Performance) {
+      def s = Stream.continually(1).take(4000)   // how much can we speed up evaluating a predicate on each element for 1 ms?
+      val l = s.toList                           // baseline: parallelize a non-lazy list
+      def it = s.iterator                        // comparison: parallelize a lazy iterator in chunks
+      def f(n: Int) = { Thread.sleep(1); false } // a predicate to parallelize, taking 1 ms for each element
+
+      val millisNoPar = bm { l.find(f) }.toDouble
+      println(s"Duration 8, no parallel:\t$millisNoPar")
+
+      val millisWithParIt = bm { it.par(1000).find(f) }.toDouble
+      println(s"Duration 9, it.par(1000):\t$millisWithParIt")
+
+      val millisWithParLst = bm { l.par.find(f) }.toDouble
+      println(s"Duration 10, l.par:\t\t$millisWithParLst")
+
+      millisWithParIt shouldBe (millisWithParLst +- (0.5 * millisWithParLst))
+    }
+
     def bm(f: => Unit): Long = {
       val t0 = System.currentTimeMillis
       f
@@ -217,6 +235,58 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
         val it = Seq(1, 2).toIterator.par(2)
         it.next() // current chunk should still contain 2
         it.filter(_ => false).toList shouldBe Nil
+      }
+    }
+
+    describe("#find") {
+      it("finds by applying predicate to each element across chunks until first true") {
+        val it = (1 to 10).toList.toIterator.par(3)
+        val maybeN = it.find(n => n > 3)
+        maybeN should be(Some(4))
+      }
+
+      it("when iterator partially advanced into chunk") {
+        val it = (1 to 10).toList.toIterator.par(3)
+        for (_ <- 1 to 5) it.next()
+        val maybeN = it.find(n => n > 3)
+        maybeN should be(Some(6))
+      }
+
+      it("returns None when predicate never true") {
+        val it = (1 to 10).toList.toIterator.par(3)
+        val maybeN = it.find(n => false)
+        maybeN should be(None)
+      }
+
+      it("passes on exception thrown by underlying iterator #next") {
+        val ex = new RuntimeException("uh oh")
+        val it = List(1).toIterator.map { n => throw ex; n }.par(3)
+        intercept[RuntimeException] { it.find(n => n > 3).toList } shouldBe ex
+      }
+
+      it("triggers effect when found in same chunk") {
+        var effectOccurred = false
+        val it = (1 to 10).toIterator.map { n => effectOccurred ||= (n == 5); n }.par(3)
+        it.next()
+        val maybeN = it.find(n => n == 4)
+        effectOccurred shouldBe true
+      }
+
+      it("doesn't trigger effect when found in earlier chunk") {
+        var effectOccurred = false
+        val it = (1 to 10).toIterator.map { n => effectOccurred ||= (n == 5); n }.par(3)
+        it.next()
+        val maybeN = it.find(n => n == 2)
+        effectOccurred shouldBe false
+      }
+
+      it("finds in parallel across threads") {
+        var threadIds = Set[Long]()
+
+        val it = (1 to 10000).toIterator.par(1000)
+        val maybeN = it.find { n => synchronized { threadIds += Thread.currentThread.getId }; false }
+
+        threadIds.size shouldBe > (1)
       }
     }
 
