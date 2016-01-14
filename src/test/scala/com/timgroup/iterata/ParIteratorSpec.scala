@@ -93,13 +93,13 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
     describe("#flatMap") {
       it("applies function to each element across chunks") {
-        val it = (1 to 10).toIterator.par(3)
+        val it = (1 to 10).iterator.par(3)
         val xs = it.flatMap(n => List(n - 1))
         xs.toList shouldBe (0 to 9).toList
       }
 
       it("when iterator partially advanced into chunk") {
-        val it = (1 to 10).toList.toIterator.par(3)
+        val it = (1 to 10).toList.iterator.par(3)
         for (_ <- 1 to 5) it.next()
         val xs = it.flatMap(n => List(n - 1))
         xs.toList shouldBe (5 to 9).toList
@@ -107,20 +107,20 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
       it("passes on exception thrown by underlying iterator #next") {
         val ex = new RuntimeException("uh oh")
-        val it = List(1).toIterator.map { n => throw ex; n }.par(3)
+        val it = List(1).iterator.map { n => throw ex; n }.par(3)
         intercept[RuntimeException] { it.flatMap(n => List(n)).toList } shouldBe ex
       }
 
       it("preserves laziness in subsequent chunks when partially advanced into first chunk") {
         var effectOccurred = false
-        val it = (1 to 10).toIterator.map { n => effectOccurred ||= (n == 4); n }.par(3)
+        val it = (1 to 10).iterator.map { n => effectOccurred ||= (n == 4); n }.par(3)
         it.next()
         val xs = it.flatMap(n => List(n))
         effectOccurred shouldBe false
       }
 
       it("extends parallel execution to function in a second #flatMap") {
-        val it1 = (1 to 10000).toIterator.par(1000)
+        val it1 = (1 to 10000).iterator.par(1000)
         val it2 = it1.flatMap(n => Seq((n, Thread.currentThread.getId)))
         val it3 = it2.flatMap { case (n, id) => Seq((n, id, Thread.currentThread.getId)) }
         //println(it3.toList)
@@ -129,13 +129,13 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       }
 
       it("handles when underlying iterator is already exhausted") {
-        val it = Seq(1).toIterator.par(1)
+        val it = Seq(1).iterator.par(1)
         it.next()
         it.flatMap(n => Seq(n)).toList shouldBe Nil
       }
 
       it("handles when function applied leaves no elements in current chunk") {
-        val it = Seq(1, 2).toIterator.par(2)
+        val it = Seq(1, 2).iterator.par(2)
         it.next() // current chunk should still contain 2
         it.flatMap(n => Nil).toList shouldBe Nil
       }
@@ -143,13 +143,13 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
     describe("#map") {
       it("applies function to each element across chunks") {
-        val it = (1 to 10).toList.toIterator.par(3)
+        val it = (1 to 10).toList.iterator.par(3)
         val xs = it.map(n => n - 1)
         xs.toList shouldBe (0 to 9).toList
       }
 
       it("when iterator partially advanced into chunk") {
-        val it = (1 to 10).toList.toIterator.par(3)
+        val it = (1 to 10).toList.iterator.par(3)
         for (_ <- 1 to 5) it.next()
         val xs = it.map(n => n - 1)
         xs.toList shouldBe (5 to 9).toList
@@ -157,20 +157,20 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
       it("passes on exception thrown by underlying iterator #next") {
         val ex = new RuntimeException("uh oh")
-        val it = List(1).toIterator.map { n => throw ex; n }.par(3)
+        val it = List(1).iterator.map { n => throw ex; n }.par(3)
         intercept[RuntimeException] { it.map(n => n).toList } shouldBe ex
       }
 
       it("preserves laziness in subsequent chunks when partially advanced into first chunk") {
         var effectOccurred = false
-        val it = (1 to 10).toIterator.map { n => effectOccurred ||= (n == 4); n }.par(3)
+        val it = (1 to 10).iterator.map { n => effectOccurred ||= (n == 4); n }.par(3)
         it.next()
         val xs = it.map(n => n)
         effectOccurred shouldBe false
       }
 
       it("extends parallel execution to function in a second #map") {
-        val it1 = (1 to 10000).toIterator.par(1000)
+        val it1 = (1 to 10000).iterator.par(1000)
         val it2 = it1.map(n => (n, Thread.currentThread.getId))
         val it3 = it2.map { case (n, id) => (n, id, Thread.currentThread.getId) }
         //println(it3.toList)
@@ -179,7 +179,7 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       }
 
       it("handles when underlying iterator is already exhausted") {
-        val it = Seq(1).toIterator.par(1)
+        val it = Seq(1).iterator.par(1)
         it.next()
         it.map(identity).toList shouldBe Nil
       }
@@ -187,13 +187,13 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
     describe("#filter") {
       it("filters by applying predicate to each element across chunks") {
-        val it = (1 to 10).toList.toIterator.par(3)
+        val it = (1 to 10).toList.iterator.par(3)
         val xs = it.filter(n => n % 3 != 0)
         xs.toList shouldBe List(1, 2, 4, 5, 7, 8, 10)
       }
 
       it("when iterator partially advanced into chunk") {
-        val it = (1 to 10).toList.toIterator.par(3)
+        val it = (1 to 10).toList.iterator.par(3)
         for (_ <- 1 to 5) it.next()
         val xs = it.filter(n => n % 3 != 0)
         xs.toList shouldBe List(7, 8, 10)
@@ -201,13 +201,13 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
       it("passes on exception thrown by underlying iterator #next") {
         val ex = new RuntimeException("uh oh")
-        val it = List(1).toIterator.map { n => throw ex; n }.par(3)
+        val it = List(1).iterator.map { n => throw ex; n }.par(3)
         intercept[RuntimeException] { it.filter(n => n % 3 != 0).toList } shouldBe ex
       }
 
       it("preserves laziness in subsequent chunks when partially advanced into first chunk") {
         var effectOccurred = false
-        val it = (1 to 10).toIterator.map { n => effectOccurred ||= (n == 4); n }.par(3)
+        val it = (1 to 10).iterator.map { n => effectOccurred ||= (n == 4); n }.par(3)
         it.next()
         val xs = it.filter(n => n % 3 != 0)
         effectOccurred shouldBe false
@@ -217,7 +217,7 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
         var threadIds1 = Set[Long]()
         var threadIds2 = Set[Long]()
 
-        val it1 = (1 to 10000).toIterator.par(1000)
+        val it1 = (1 to 10000).iterator.par(1000)
         val it2 = it1.filter { n => synchronized { threadIds1 += Thread.currentThread.getId }; true }
         val it3 = it2.filter { n => synchronized { threadIds2 += Thread.currentThread.getId }; true }
         it3.foreach(_ => ())
@@ -226,13 +226,13 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       }
 
       it("handles when underlying iterator is already exhausted") {
-        val it = Seq(1).toIterator.par(1)
+        val it = Seq(1).iterator.par(1)
         it.next()
         it.filter(n => true).toList shouldBe Nil
       }
 
       it("handles when filter predicate leaves no elements in current chunk") {
-        val it = Seq(1, 2).toIterator.par(2)
+        val it = Seq(1, 2).iterator.par(2)
         it.next() // current chunk should still contain 2
         it.filter(_ => false).toList shouldBe Nil
       }
@@ -240,33 +240,33 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
     describe("#find") {
       it("finds by applying predicate to each element across chunks until first true") {
-        val it = (1 to 10).toList.toIterator.par(3)
+        val it = (1 to 10).toList.iterator.par(3)
         val maybeN = it.find(n => n > 3)
         maybeN should be(Some(4))
       }
 
       it("when iterator partially advanced into chunk") {
-        val it = (1 to 10).toList.toIterator.par(3)
+        val it = (1 to 10).toList.iterator.par(3)
         for (_ <- 1 to 5) it.next()
         val maybeN = it.find(n => n > 3)
         maybeN should be(Some(6))
       }
 
       it("returns None when predicate never true") {
-        val it = (1 to 10).toList.toIterator.par(3)
+        val it = (1 to 10).toList.iterator.par(3)
         val maybeN = it.find(n => false)
         maybeN should be(None)
       }
 
       it("passes on exception thrown by underlying iterator #next") {
         val ex = new RuntimeException("uh oh")
-        val it = List(1).toIterator.map { n => throw ex; n }.par(3)
+        val it = List(1).iterator.map { n => throw ex; n }.par(3)
         intercept[RuntimeException] { it.find(n => n > 3).toList } shouldBe ex
       }
 
       it("triggers effect when found in same chunk") {
         var effectOccurred = false
-        val it = (1 to 10).toIterator.map { n => effectOccurred ||= (n == 5); n }.par(3)
+        val it = (1 to 10).iterator.map { n => effectOccurred ||= (n == 5); n }.par(3)
         it.next()
         val maybeN = it.find(n => n == 4)
         effectOccurred shouldBe true
@@ -274,7 +274,7 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
       it("doesn't trigger effect when found in earlier chunk") {
         var effectOccurred = false
-        val it = (1 to 10).toIterator.map { n => effectOccurred ||= (n == 5); n }.par(3)
+        val it = (1 to 10).iterator.map { n => effectOccurred ||= (n == 5); n }.par(3)
         it.next()
         val maybeN = it.find(n => n == 2)
         effectOccurred shouldBe false
@@ -283,7 +283,7 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       it("finds in parallel across threads") {
         var threadIds = Set[Long]()
 
-        val it = (1 to 10000).toIterator.par(1000)
+        val it = (1 to 10000).iterator.par(1000)
         val maybeN = it.find { n => synchronized { threadIds += Thread.currentThread.getId }; false }
 
         threadIds.size shouldBe > (1)
@@ -292,22 +292,22 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
     describe("#hasNext") {
       it("returns false when underlying iterator was already empty") {
-        List[Int]().toIterator.par(3).hasNext shouldBe false
+        List[Int]().iterator.par(3).hasNext shouldBe false
       }
 
       it("returns false when all elements have been returned") {
-        val it = List(1).toIterator.par(1)
+        val it = List(1).iterator.par(1)
         it.next()
         it.hasNext shouldBe false
       }
 
       it("returns true when elements remain in first chunk") {
-        val it = List(1).toIterator.par(1)
+        val it = List(1).iterator.par(1)
         it.hasNext shouldBe true
       }
 
       it("returns true when elements remain after first chunk") {
-        val it = List(1, 2, 3).toIterator.par(2)
+        val it = List(1, 2, 3).iterator.par(2)
         for (_ <- 1 to 2) it.next()
         it.hasNext shouldBe true
       }
@@ -315,20 +315,20 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
     describe("#next") {
       it("returns each element across chunks") {
-        val it = (1 to 10).toList.toIterator.par(3)
+        val it = (1 to 10).toList.iterator.par(3)
         val xs = for (_ <- 1 to 10) yield it.next()
         xs.toList shouldBe (1 to 10).toList
       }
 
       it("throws when no elements remaining") {
         intercept[NoSuchElementException] {
-          List[Int]().toIterator.par(3).next()
+          List[Int]().iterator.par(3).next()
         }
       }
 
       it("passes on exception thrown by underlying iterator #next") {
         val ex = new RuntimeException("uh oh")
-        val it = List(1).toIterator.map { n => throw ex; n }.par(3)
+        val it = List(1).iterator.map { n => throw ex; n }.par(3)
         intercept[RuntimeException] { it.next() } shouldBe ex
       }
     }

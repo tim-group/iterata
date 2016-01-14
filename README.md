@@ -24,7 +24,7 @@ Use the `#par()` method to add parallelism when processing an `Iterator` with fu
 
 ```scala
 scala> import com.timgroup.iterata.ParIterator.Implicits._
-scala> val it = (1 to 100000).toIterator.par().map(n => (n + 1, Thread.currentThread.getId))
+scala> val it = (1 to 100000).iterator.par().map(n => (n + 1, Thread.currentThread.getId))
 scala> it.map(_._2).toSet.size
 res2: Int = 8 // addition was distributed over 8 threads
 ```
@@ -43,7 +43,7 @@ Note that only the following Iterator methods are implemented (so far) to make u
 The `#par()` method is available on any iterator, and takes an optional chunk size parameter. However, if you already have a `GroupedIterator`, you can simply call `#par` since it is already grouped. For example:
 
 ```scala
-scala> val it = (1 to 100000).toIterator.grouped(4).par
+scala> val it = (1 to 100000).iterator.grouped(4).par
 ```
 
 ### 2. Memoize exhaustion iterator: `#memoizeExhaustion`

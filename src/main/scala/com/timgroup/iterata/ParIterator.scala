@@ -20,7 +20,7 @@ import scala.collection.{GenTraversableOnce, AbstractIterator, Iterator}
  *
  * {{{
  * scala> import com.timgroup.iterata.ParIterator.Implicits._
- * scala> val it = (1 to 100000).toIterator.par().map(n => (n + 1, Thread.currentThread.getId))
+ * scala> val it = (1 to 100000).iterator.par().map(n => (n + 1, Thread.currentThread.getId))
  * scala> it.map(_._1).toSet.size
  * res2: Int = 8 // addition was distributed over 8 threads
  * }}}
@@ -50,7 +50,7 @@ class ParIterator[A](groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A] {
 
   private def allChunks = currChunk match {
     case Nil => groupedItNoEmptyChunks
-    case _   => Seq(currChunk).toIterator ++ groupedItNoEmptyChunks
+    case _   => Seq(currChunk).iterator ++ groupedItNoEmptyChunks
   }
 
   //////////////////////////////////////////////////////////////////////////
