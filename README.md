@@ -31,6 +31,12 @@ res2: Int = 8 // addition was distributed over 8 threads
 
 You can provide a specific chunk size, for example `it.par(100)`.
 
+Note that only the following methods are implemented (so far) with parallel collections:
+
+  * `#map`
+  * `#flatMap`
+  * `#filter`
+
 #### Grouped vs Ungrouped
 
 The `#par()` method is available on any iterator, and takes an optional chunk size parameter. However, if you already have a `GroupedIterator`, you can simply call `#par` since it is already grouped. For example:
