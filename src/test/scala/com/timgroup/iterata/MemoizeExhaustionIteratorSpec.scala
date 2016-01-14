@@ -25,15 +25,19 @@ class MemoizeExhaustionIteratorSpec extends FunSpec with Matchers with Diagramme
     }
 
     describe("after two `++` calls") {
-      val it1 = new IteratorWithExpensiveHasNext()
-      val it2 = new IteratorWithExpensiveHasNext()
+      
+      it("ConcatIterator never calls hasNext on exhausted left iterator") {
+        val it1 = new IteratorWithExpensiveHasNext()
+        val it2 = new IteratorWithExpensiveHasNext()
 
-      (Iterator.empty ++ it1 ++ it2).foreach(_ => ())
+        (Iterator.empty ++ it1 ++ it2).foreach(_ => ())
 
-      // Why it1.hasNext is called the expected 1 times:
-      //   - the second `++` call creates a ConcatIterator instead of JoinIterator
-      //   - ConcatIterator never calls hasNext again after it returns false
-      it1.numTimesHasNextReturnedFalse should be(1)
+        // Why it1.hasNext is called the expected 1 times:
+        //   - the second `++` call creates a ConcatIterator instead of JoinIterator
+        //   - ConcatIterator never calls hasNext again after it returns false
+        it1.numTimesHasNextReturnedFalse should be(1)
+      }
+
     }
 
   }
