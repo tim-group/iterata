@@ -17,3 +17,5 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.5" % "test"
 // Don't download javadocs for transitive dependencies,
 // see https://github.com/mpeltonen/sbt-idea/issues/225#issuecomment-19150022
 transitiveClassifiers in Global := Seq(Artifact.SourceClassifier)
+
+overridePublishSettings
