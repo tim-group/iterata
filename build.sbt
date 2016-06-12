@@ -12,7 +12,7 @@ scalacOptions ++= Seq("-unchecked", "-deprecation")
 //
 // Dependencies
 //
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.5" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 
 // Don't download javadocs for transitive dependencies,
 // see https://github.com/mpeltonen/sbt-idea/issues/225#issuecomment-19150022
