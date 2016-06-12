@@ -29,7 +29,7 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       val millisWithParLst = bm { l.par.map(f).foreach(_ => ()) }.toDouble
       println(s"Duration 3, l.par:\t\t$millisWithParLst")
 
-      millisWithParIt shouldBe (millisWithParLst +- (0.5 * millisWithParLst))
+      millisWithParIt shouldBe (millisWithParLst +- (0.5 * math.max(millisWithParIt, millisWithParLst)))
     }
 
     it("but, same speed #map on slow iterator with fast function", Performance) {
