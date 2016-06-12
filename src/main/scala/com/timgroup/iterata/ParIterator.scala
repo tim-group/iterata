@@ -4,6 +4,7 @@ import scala.annotation.tailrec
 import scala.collection.{GenTraversableOnce, AbstractIterator, Iterator}
 
 import MemoizeExhaustionIterator.Implicits.IteratorWithMemoizeExhaustion
+import scala.collection.parallel.{defaultTaskSupport, TaskSupport}
 
 /**
  * A "parallel iterator" combining Scala’s parallel collections with an
@@ -30,7 +31,16 @@ import MemoizeExhaustionIterator.Implicits.IteratorWithMemoizeExhaustion
  * @param groupedIt  an underlying grouped iterator, e.g. from `Iterator#grouped`
  * @tparam A         the type of each element
  */
-class ParIterator[A](groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A] {
+
+class ParIterator[A](groupedIt: Iterator[Seq[A]], taskSupport: TaskSupport = defaultTaskSupport) extends AbstractIterator[A] {
+  implicit class WithTaskSupport[A](xs: Seq[A]) {
+    def parWithTaskSupport = {
+      val par = xs.par
+      par.tasksupport = taskSupport
+      par
+    }
+  }
+
   val groupedItNoEmptyChunks = groupedIt.filterNot(_.isEmpty)
   var currChunk: List[A] = Nil
 
@@ -39,16 +49,16 @@ class ParIterator[A](groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A] {
   //////////////////////////////////////////////////////////////////////////
 
   override def flatMap[B](f: A => GenTraversableOnce[B]): Iterator[B] =
-    new ParIterator(allChunks.map(xs => xs.par.flatMap(f).toList))
+    new ParIterator(allChunks.map(xs => xs.parWithTaskSupport.flatMap(f).toList), taskSupport)
 
   override def map[B](f: A => B): Iterator[B] =
-    new ParIterator(allChunks.map(xs => xs.par.map(f).toList))
+    new ParIterator(allChunks.map(xs => xs.parWithTaskSupport.map(f).toList), taskSupport)
 
   override def filter(p: A => Boolean): Iterator[A] =
-    new ParIterator(allChunks.map(xs => xs.par.filter(p).toList))
+    new ParIterator(allChunks.map(xs => xs.parWithTaskSupport.filter(p).toList), taskSupport)
 
   override def find(p: A => Boolean): Option[A] =
-    new ParIterator(allChunks.map(xs => xs.par.find(p).toList)).take(1).toList.headOption
+    new ParIterator(allChunks.map(xs => xs.parWithTaskSupport.find(p).toList), taskSupport).take(1).toList.headOption
 
   private def allChunks = currChunk match {
     case Nil => groupedItNoEmptyChunks
@@ -69,20 +79,20 @@ class ParIterator[A](groupedIt: Iterator[Seq[A]]) extends AbstractIterator[A] {
 }
 
 object ParIterator {
-
   object Implicits {
 
     implicit class GroupedIteratorWithPar[A](groupedIt: Iterator[Seq[A]]) {
-      def par: Iterator[A] =
-        new ParIterator[A](groupedIt)
+      def par(taskSupport: TaskSupport = defaultTaskSupport): Iterator[A] =
+        new ParIterator[A](groupedIt, taskSupport)
     }
 
     implicit class UngroupedIteratorWithPar[A](it: Iterator[A]) {
-      def par(chunkSize: Int = 2048): Iterator[A] =
-        it.grouped(chunkSize).par
+      def par(chunkSize: Int = 2048, taskSupport: TaskSupport = defaultTaskSupport): Iterator[A] ={
+        val v = it.grouped(chunkSize).par(taskSupport)
+        v
+      }
     }
 
   }
 
 }
-

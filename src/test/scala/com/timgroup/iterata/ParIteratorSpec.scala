@@ -1,9 +1,12 @@
 package com.timgroup.iterata
 
 import java.util.NoSuchElementException
+import java.util.concurrent.atomic.AtomicInteger
 
 import com.timgroup.iterata.ParIterator.Implicits._
 import org.scalatest.{DiagrammedAssertions, FunSpec, Matchers, Tag}
+
+import scala.collection.parallel.{Task, TaskSupport}
 
 object Performance extends Tag("Performance")
 
@@ -333,6 +336,56 @@ class ParIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
       }
     }
 
+  }
+
+  class CountingTaskSupport(underlying: TaskSupport = scala.collection.parallel.defaultTaskSupport) extends TaskSupport {
+    def count = _count.get()
+    private val _count = new AtomicInteger(0)
+    override val environment: AnyRef = underlying.environment
+    override def parallelismLevel: Int = underlying.parallelismLevel
+    override def execute[R, Tp](fjtask: Task[R, Tp]): () => R = {
+      _count.incrementAndGet()
+      underlying.execute(fjtask)
+    }
+
+    override def executeAndWaitResult[R, Tp](task: Task[R, Tp]): R = {
+      _count.incrementAndGet()
+      underlying.executeAndWaitResult(task)
+    }
+  }
+
+  describe("taskSupport") {
+    it("is used in #filter") {
+      val ts = new CountingTaskSupport()
+      val it = (1 to 10).iterator.par(3, ts)
+      val xs = it.filter(n => n % 3 != 0).toList
+      xs should have size 7
+      ts.count shouldBe 8
+    }
+
+    it("is used in #find") {
+      val ts = new CountingTaskSupport()
+      val it = (1 to 10).toList.iterator.par(3, ts)
+      val maybeN = it.find(n => n > 3)
+      maybeN should be(Some(4))
+      ts.count shouldBe 2
+    }
+
+    it("is used in #flatMap") {
+      val ts = new CountingTaskSupport()
+      val it = (1 to 10).iterator.par(3, ts)
+      val xs = it.flatMap(n => List(n - 1)).toList
+      xs should have size 10
+      ts.count shouldBe 8
+    }
+
+    it("is used in #map") {
+      val ts = new CountingTaskSupport()
+      val it = (1 to 10).toList.iterator.par(3, ts)
+      val xs = it.map(n => n - 1).toList
+      xs should have size 10
+      ts.count shouldBe 8
+    }
   }
 
 }
