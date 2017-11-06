@@ -69,3 +69,5 @@ pomExtra := (
 )
 
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
+releaseCrossBuild := true
