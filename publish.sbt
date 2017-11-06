@@ -60,6 +60,11 @@ pomExtra := (
       <name>Marc Siegel</name>
       <url>https://github.com/ms-tg</url>
     </developer>
+    <developer>
+      <id>flicken</id>
+      <name>Brian Roberts</name>
+      <url>https://github.com/flicken</url>
+    </developer>
   </developers>
 )
 
