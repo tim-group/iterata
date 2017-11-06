@@ -5,23 +5,31 @@ import org.scalatest.{DiagrammedAssertions, FunSpec, Matchers}
 
 class MemoizeExhaustionIteratorSpec extends FunSpec with Matchers with DiagrammedAssertions {
 
+  val expectSI9623ToBeFixed = util.Properties.versionNumberString.split("\\.") match {
+    case Array("2", "11", minor) if minor.toInt < 8 => false
+    case _ => true
+  }
+
   describe("Demonstration of SI-9623: JoinIterator always calls hasNext on exhausted left iterator after `++`") {
 
-    describe("after a single `++`") {
+    if (!expectSI9623ToBeFixed) {
+      describe("after a single `++`") {
 
-      it("JoinIterator always calls hasNext on exhausted left iterator") {
-        val it1 = new IteratorWithExpensiveHasNext()
-        val it2 = new IteratorWithExpensiveHasNext()
+        it("JoinIterator always calls hasNext on exhausted left iterator") {
+          println(util.Properties.versionString)
+          println(util.Properties.versionMsg)
+          val it1 = new IteratorWithExpensiveHasNext()
+          val it2 = new IteratorWithExpensiveHasNext()
 
-        (it1 ++ it2).foreach(_ => ())
+          (it1 ++ it2).foreach(_ => ())
 
-        // Why it1.hasNext is called 21 times instead of the expected 1:
-        //   - for each of the 10 values in it2, once in JoinIterator#hasNext,
-        //     and again in JoinIterator#next()
-        //   - plus the final time that JoinIterator#hasNext will return false
-        it1.numTimesHasNextReturnedFalse should be(21)
+          // Why it1.hasNext is called 21 times instead of the expected 1:
+          //   - for each of the 10 values in it2, once in JoinIterator#hasNext,
+          //     and again in JoinIterator#next()
+          //   - plus the final time that JoinIterator#hasNext will return false
+          it1.numTimesHasNextReturnedFalse should be(21)
+        }
       }
-
     }
 
     describe("after two `++` calls") {

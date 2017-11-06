@@ -4,7 +4,9 @@ name := "iterata"
 homepage := Some(url("https://github.com/tim-group/iterata"))
 licenses := Seq("MIT" -> url("http://opensource.org/licenses/MIT"))
 
-scalaVersion := "2.11.8"
+crossScalaVersions := Seq("2.11.11", "2.12.4")
+
+scalaVersion := crossScalaVersions.value.head
 
 // Compilation options
 scalacOptions ++= Seq("-unchecked", "-deprecation")
